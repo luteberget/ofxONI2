@@ -278,27 +278,25 @@ void ofxONI2::updateDepthPixels() {
 		ofLogVerbose("ofxONI2") << "Max depth establised to " << ref_max_depth;
 	}
 
-	unsigned short *pDPixel = depthPixelsRaw.getPixels();
+	unsigned short *rawpixel = depthPixelsRaw.getPixels();
+	unsigned char  *depthpixel = depthPixels.getPixels();
+	float	       *floatpixel = distancePixels.getPixels();
+	ofColor c;
 
-	// // Make hue-valued depth image
-	// for(int x = 0; x < kinect_width; x ++) {
-	// 	for(int y = 0; y < kinect_height; y ++) {
-	// 		ofColor color;
-	// 		if(pDPixel[x+y*kinect_width] == 0) {
-	// 			color = ofColor(0,0,0);
-	// 		} else {
-	// 			double relative_depth = ((double)pDPixel[x+y*kinect_width]) / ref_max_depth;
-	// 			unsigned char hue = (unsigned char)(255.0*relative_depth);
+	for(int i = 0; i < stream_width*stream_height; i++) {
+		if(rawpixel[i] > 0) {
+			unsigned char hue = (unsigned char)(255.0 * (((double)rawpixel[i]) / ref_max_depth));
+			c = ofColor::fromHsb(hue,255,255);
+		} else {
+			c = 0;
+		}
 
-	// 			color = ofColor::fromHsb(hue,255,255);
+		depthpixel[3*i + 0] = c.r;
+		depthpixel[3*i + 1] = c.g;
+		depthpixel[3*i + 2] = c.b;
 
-	// 		}
-	// 		depth_image.setColor(x,y,color);
-	// 	}
-	// }
-
-
-
+		floatpixel[i] = depthpixel[i];
+	}
 }
 
 void ofxONI2::threadedFunction() {
