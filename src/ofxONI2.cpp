@@ -1,10 +1,5 @@
 #include "ofxONI2.h"
 
-// OpenNI init sequence, taken from simple OpenNI example.
-// Should maybe add some shutdown handling?
-//
-//
-
 ofxONI2::ofxONI2() {
 	ofLogVerbose("ofxONI2") << "Creating ofxONI2";
 	deviceURI = "";
