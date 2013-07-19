@@ -124,15 +124,14 @@ class ofxONI2 : public ofxBase3DVideo, protected ofThread {
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;
 
-	private:
+		openni::VideoFrameRef oni_depth_frame;
+		openni::VideoFrameRef oni_color_frame;
 
-		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
-		// to open the device instead in subclass ofxNiTEUserTracker.
-		bool openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode);
+	 	openni::Device oni_device;
 
-		// Back-buffers
-		ofShortPixels depthPixelsRawBack; 
-		ofPixels videoPixelsBack;
+		openni::VideoStream oni_depth_stream;
+		openni::VideoStream oni_color_stream;
+
 
 		bool bIsFrameNew;
 		bool bNeedsUpdateColor;
@@ -140,57 +139,24 @@ class ofxONI2 : public ofxBase3DVideo, protected ofThread {
 		bool bUpdateTex;
 		bool bGrabVideo;
 		bool bColorizeDepthImage;
+		
+		// Back-buffers
+		ofShortPixels depthPixelsRawBack; 
+		ofPixels videoPixelsBack;
 
-		void threadedFunction();
-		void updateDepthPixels();
-
-	// 	void generate_grid();
-
-	// 	ofVec3f xy2i_to_xyz3f(int x, int y);
-	// 	ofVec3f pixel3f_to_world3f( ofVec3f p);
-	// 	cv::Point3f pixel3f_to_world3f( cv::Point3f p);
-
- 	openni::VideoFrameRef oni_depth_frame;
- 	openni::VideoFrameRef oni_color_frame;
-
-	// 	
-	// 	ofImage depth_image;
-	// 	ofImage color_image;
-	// 	ofImage depth_map;
-	// 	ofImage users_image;
-
-	// 	ofMesh kinect_mesh;
-	// 	ofVboMesh kinect_grid;
-	 	unsigned short ref_max_depth;
-	// private:
-	//
-
-	 	openni::Device oni_device;
-
-		openni::VideoStream oni_depth_stream;
-		openni::VideoStream oni_color_stream;
-
-		openni::VideoStream **oni_streams;
-
-	// 	bool b_updated_usertracker = false;
-
-	// 	nite::UserTracker usertracker;
-	// 	nite::UserTrackerFrameRef usertrackerframe;
-
-
-
-	// 	ofTexture depth_texture;
-	// 	ofTexture color_texture;
-
-	// 	int kinect_width, kinect_height;
-	
 		int stream_width, stream_height;
 
-	// 	bool b_has_changed_depth, b_has_changed_color;
+		virtual void updateDepthPixels();
+
+	 	unsigned short ref_max_depth;
 
 
-	// 	void addMeshFace(ofVec3f a, ofVec3f b, ofVec3f c);
-	// 	void addMeshFace(ofVec3f a, ofVec3f b, ofVec3f c, ofVec3f d);
-	// 	void addMeshTexture(ofVec2f a, ofVec2f b, ofVec2f c);
-	// 	void addMeshTexture(ofVec2f a, ofVec2f b, ofVec2f c, ofVec2f d);
+	private:
+		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
+		// to open the device instead in subclass ofxNiTEUserTracker.
+		virtual bool openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode);
+
+		virtual void threadedFunction();
+
+		openni::VideoStream **oni_streams;
 };

@@ -88,6 +88,7 @@ void ofxONI2::clear() {
 }
 
 bool ofxONI2::openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode) {
+	ofLogVerbose("ofxONI2") << "Opening OpenNI streams.";
 	openni::Status rc = openni::STATUS_OK;
 
 	// Open device
