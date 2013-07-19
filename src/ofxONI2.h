@@ -126,6 +126,10 @@ class ofxONI2 : public ofxBase3DVideo, protected ofThread {
 
 	private:
 
+		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
+		// to open the device instead in subclass ofxNiTEUserTracker.
+		bool openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode);
+
 		// Back-buffers
 		ofShortPixels depthPixelsRawBack; 
 		ofPixels videoPixelsBack;

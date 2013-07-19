@@ -87,13 +87,7 @@ void ofxONI2::clear() {
 	bGrabberInited = false;
 }
 
-
-bool ofxONI2::open(const char* deviceURI) {
-	if(!bGrabberInited) {
-		ofLogWarning("ofxONI2") << "open(): cannot open, init not called";
-		return false;
-	}
-
+bool ofxONI2::openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode) {
 	openni::Status rc = openni::STATUS_OK;
 
 	// Open device
@@ -144,14 +138,29 @@ bool ofxONI2::open(const char* deviceURI) {
 		return false;
 	}
 
+	*depthVideoMode = oni_depth_stream.getVideoMode();
+	if(bGrabVideo) *colorVideoMode = oni_color_stream.getVideoMode();
+
+	oni_streams = new openni::VideoStream*[2];
+	oni_streams[0] = &oni_depth_stream;
+	oni_streams[1] = &oni_color_stream;
+
+	return true;
+}
+
+
+bool ofxONI2::open(const char* deviceURI) {
+	if(!bGrabberInited) {
+		ofLogWarning("ofxONI2") << "open(): cannot open, init not called";
+		return false;
+	}
 
 	openni::VideoMode depthVideoMode;
 	openni::VideoMode colorVideoMode;
 
-	if (oni_depth_stream.isValid() && oni_color_stream.isValid()) {
-		depthVideoMode = oni_depth_stream.getVideoMode();
-		colorVideoMode = oni_color_stream.getVideoMode();
+	openstreams(deviceURI, &depthVideoMode, &colorVideoMode);
 
+	if (bGrabVideo) {
 		int oni_depthWidth = depthVideoMode.getResolutionX();
 		int oni_depthHeight = depthVideoMode.getResolutionY();
 		int oni_colorWidth = colorVideoMode.getResolutionX();
@@ -164,17 +173,9 @@ bool ofxONI2::open(const char* deviceURI) {
 			ofLogWarning("ofxONI2") <<  "Error - expect color and depth streams to be in same resolution"; 
 			return false;
 		}
-	} else if (oni_depth_stream.isValid()) {
-		depthVideoMode = oni_depth_stream.getVideoMode();
+	} else {
 		stream_width = depthVideoMode.getResolutionX();
 		stream_height = depthVideoMode.getResolutionY();
-	} else if (bGrabVideo && oni_color_stream.isValid()) {
-		colorVideoMode = oni_color_stream.getVideoMode();
-		stream_width = colorVideoMode.getResolutionX();
-		stream_height = colorVideoMode.getResolutionY();
-	} else {
-		ofLogWarning("ofxONI2") << "Error - expects at least one of the OpenNI streams to be valid.";
-		return false;
 	}
 
 
@@ -182,15 +183,13 @@ bool ofxONI2::open(const char* deviceURI) {
 	// and the color image to be of in format PIXEL_FORMAT_RGB888. If this should fail,
 	// maybe it should be specified by some setPixelFormat first?
 
-	if(oni_depth_stream.isValid()) {
-		ofLogVerbose("ofxONI2") << "OpenNI depth pixel format " << depthVideoMode.getPixelFormat();
-		if(depthVideoMode.getPixelFormat() != openni::PIXEL_FORMAT_DEPTH_1_MM) {
-			ofLogWarning("ofxONI2") << "Expected depth image format to be PIXEL_FORMAT_DEPTH_1_MM";
-			return false;
-		}
+	ofLogVerbose("ofxONI2") << "OpenNI depth pixel format " << depthVideoMode.getPixelFormat();
+	if(depthVideoMode.getPixelFormat() != openni::PIXEL_FORMAT_DEPTH_1_MM) {
+		ofLogWarning("ofxONI2") << "Expected depth image format to be PIXEL_FORMAT_DEPTH_1_MM";
+		return false;
 	}
 
-	if(bGrabVideo && oni_color_stream.isValid()) {
+	if(bGrabVideo) {
 		ofLogVerbose("ofxONI2") << "OpenNI color pixel format " << colorVideoMode.getPixelFormat();
 		if(colorVideoMode.getPixelFormat() != openni::PIXEL_FORMAT_RGB888) {
 			ofLogWarning("ofxONI2") << "Expected color image format to be PIXEL_FORMAT_RGB888";
@@ -198,9 +197,6 @@ bool ofxONI2::open(const char* deviceURI) {
 		}
 	}
 
-	oni_streams = new openni::VideoStream*[2];
-	oni_streams[0] = &oni_depth_stream;
-	oni_streams[1] = &oni_color_stream;
 
 	ofLogVerbose("ofxONI2") << "Image size " << stream_width << "x" << stream_height << endl;
 
