@@ -158,7 +158,11 @@ bool ofxONI2::open(const char* deviceURI) {
 	openni::VideoMode depthVideoMode;
 	openni::VideoMode colorVideoMode;
 
-	openstreams(deviceURI, &depthVideoMode, &colorVideoMode);
+	bool streams_opened = openstreams(deviceURI, &depthVideoMode, &colorVideoMode);
+	if(!streams_opened) {
+		ofLogWarning("ofxONI2") << "could not open streams (openstreams())";
+		return false;
+	}
 
 	if (bGrabVideo) {
 		int oni_depthWidth = depthVideoMode.getResolutionX();
