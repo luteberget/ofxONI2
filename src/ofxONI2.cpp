@@ -398,35 +398,10 @@ void ofxONI2::draw(float x, float y, float w, float h) {
 	}
 }
 
-void ofxONI2::draw(float x, float y) {
-	draw(x,y,stream_width,stream_height);
-}
-
-void ofxONI2::draw(const ofPoint& point) {
-	draw(point.x, point.y);
-}
-
-void ofxONI2::draw(const ofRectangle& rect) {
-	draw(rect.x, rect.y, rect.width, rect.height);
-}
-
-
 void ofxONI2::drawDepth(float x, float y, float w, float h) {
 	if(bUseTexture) {
 		depthTex.draw(x,y,w,h);
 	}
-}
-
-void ofxONI2::drawDepth(float x, float y) {
-	drawDepth(x,y,stream_width,stream_height);
-}
-
-void ofxONI2::drawDepth(const ofPoint& point) {
-	drawDepth(point.x, point.y);
-}
-
-void ofxONI2::drawDepth(const ofRectangle& rect) {
-	drawDepth(rect.x, rect.y, rect.width, rect.height);
 }
 
 void ofxONI2::draw3D() {
