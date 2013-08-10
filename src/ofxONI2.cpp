@@ -206,7 +206,11 @@ bool ofxONI2::open(const char* deviceURI) {
 	videoPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 	videoPixelsBack.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 
-	depthPixels.allocate(stream_width,stream_height, 1);
+	if(bColorizeDepthImage) {
+		depthPixels.allocate(stream_width,stream_height, OF_IMAGE_COLOR);
+	} else {
+		depthPixels.allocate(stream_width,stream_height, 1);
+	}
 	distancePixels.allocate(stream_width, stream_height, 1);
 
 	depthPixelsRaw.set(0);
@@ -255,7 +259,11 @@ void ofxONI2::update() {
 		}
 
 		if(bUseTexture) {
-			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_RGB);
+			if(bColorizeDepthImage) {
+				depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_RGB);
+			} else {
+				depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_LUMINANCE);
+			}
 			videoTex.loadData(videoPixels.getPixels(), stream_width, stream_height, GL_RGB);
 		}
 
@@ -280,18 +288,22 @@ void ofxONI2::updateDepthPixels() {
 	ofColor c;
 
 	for(int i = 0; i < stream_width*stream_height; i++) {
-		if(rawpixel[i] > 0) {
-			unsigned char hue = (unsigned char)(255.0 * (((double)rawpixel[i]) / ref_max_depth));
-			c = ofColor::fromHsb(hue,255,255);
+		floatpixel[i] = rawpixel[i];
+		unsigned char hue = (unsigned char)(255.0 * (floatpixel[i] / ref_max_depth));
+
+
+		if(bColorizeDepthImage) {
+			if(rawpixel[i] > 0) {
+				c = ofColor::fromHsb(hue,255,255);
+			} else {
+				c = ofColor::black;
+			}
+			depthpixel[3*i + 0] = c.r;
+			depthpixel[3*i + 1] = c.g;
+			depthpixel[3*i + 2] = c.b;
 		} else {
-			c = 0;
+			depthpixel[i] = hue;
 		}
-
-		depthpixel[3*i + 0] = c.r;
-		depthpixel[3*i + 1] = c.g;
-		depthpixel[3*i + 2] = c.b;
-
-		floatpixel[i] = depthpixel[i];
 	}
 }
 
