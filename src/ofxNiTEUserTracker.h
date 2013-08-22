@@ -50,10 +50,16 @@ class ofxNiTEUserTracker : public ofxONI2 {
 		bool init(bool use_color_image = true, bool use_texture = true, bool colorize_depth_image = true);
 		virtual void updateDepthPixels();
 		ofShortPixels& getUserMapRef() { return userMap; }
-		vector<ofxNiTEUserData>& getUserData() { return userData; }
+		map<short,ofxNiTEUserData>& getUserData() { return userData; }
 
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
+
+		ofVec2f jointToDepth(ofVec3f i) { 
+			float a,b; 
+			usertracker.convertJointCoordinatesToDepth(i.x,i.y,i.z,&a,&b);
+			return ofVec2f(a,b);
+		}
 
 	private:
 		nite::UserTracker usertracker;
@@ -63,8 +69,8 @@ class ofxNiTEUserTracker : public ofxONI2 {
 		ofShortPixels userMapBack;
 		ofTexture userMapTex;
 
-		vector<ofxNiTEUserData> userData;
-		vector<ofxNiTEUserData> userDataBack;
+		map<short,ofxNiTEUserData> userData;
+		map<short,ofxNiTEUserData> userDataBack;
 
 		virtual bool openstreams(const char* deviceURI, openni::VideoMode* depthVideoMode, openni::VideoMode* colorVideoMode);
 		virtual void threadedFunction();

@@ -114,7 +114,7 @@ void ofxNiTEUserTracker::threadedFunction() {
 				ofNotifyEvent(lostUserEvent, userid);
 			}
 
-			userDataBack.push_back(ofxNiTEUserData(user));
+			userDataBack[userid] = ofxNiTEUserData(user);
 		}
 		userMapBack.setFromPixels((unsigned short*) usertrackerframe.getUserMap().getPixels(),
 				stream_width, stream_height, 1);
