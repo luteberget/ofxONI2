@@ -3,6 +3,8 @@
 bool ofxNiTEUserTracker::init(bool use_color_image, bool use_texture, bool colorize_depth_image) {
 	bool inited = ofxONI2::init(use_color_image, use_texture, colorize_depth_image);
 
+	bUseSkeletonTracking = true;
+
 	// Initialize NiTE
 	//
 	if(inited) {
@@ -70,11 +72,18 @@ bool ofxNiTEUserTracker::openstreams(const char* deviceURI, openni::VideoMode* d
 	*depthVideoMode = oni_depth_frame.getVideoMode();
 	if(bGrabVideo) *colorVideoMode = oni_color_stream.getVideoMode();
 
+
 	return true;
 }
 
+bool firstskel = true;
 void ofxNiTEUserTracker::threadedFunction() {
 	ofLogVerbose("ofxONI2") << "Starting NiTE User Tracker update thread.";
+
+	if(!userMap.isAllocated() || !userMapBack.isAllocated()) {
+		userMap.allocate(stream_width, stream_height, 1);
+		userMapBack.allocate(stream_width, stream_height, 1);
+	}
 
 	while(isThreadRunning()) {
 		// ofLogVerbose("ofxONI2") << "thread is running";
@@ -86,6 +95,29 @@ void ofxNiTEUserTracker::threadedFunction() {
 		depthPixelsRawBack.setFromPixels((unsigned short*) oni_depth_frame.getData(), 
 			stream_width, stream_height, 1);
 		bNeedsUpdateDepth = true;
+
+		// Update user tracker map and send new/lost user events.
+
+		const nite::Array<nite::UserData>& users  = usertrackerframe.getUsers();
+		userDataBack.clear();
+		for(int i = 0; i < users.getSize(); i++) {
+			const nite::UserData& user = users[i];
+			short userid = user.getId();
+			if(user.isNew()) {
+				ofNotifyEvent(newUserEvent, userid);
+
+				if(bUseSkeletonTracking) {
+					usertracker.startSkeletonTracking(user.getId());
+				}
+			}
+			if(user.isLost()) {
+				ofNotifyEvent(lostUserEvent, userid);
+			}
+
+			userDataBack.push_back(ofxNiTEUserData(user));
+		}
+		userMapBack.setFromPixels((unsigned short*) usertrackerframe.getUserMap().getPixels(),
+				stream_width, stream_height, 1);
 		unlock();
 
 		if(bGrabVideo) {
@@ -104,5 +136,9 @@ void ofxNiTEUserTracker::threadedFunction() {
 void ofxNiTEUserTracker::updateDepthPixels() {
 	ofxONI2::updateDepthPixels();
 
-	// TODO: update user mask image
+	if(lock()) {
+		userMap = userMapBack;
+		userData = userDataBack;
+		unlock();
+	}
 }
