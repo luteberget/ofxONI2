@@ -55,10 +55,28 @@ class ofxNiTEUserTracker : public ofxONI2 {
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
 
-		ofVec2f jointToDepth(ofVec3f i) { 
+		ofVec2f jointToDepth2f(ofVec3f i) { 
 			float a,b; 
 			usertracker.convertJointCoordinatesToDepth(i.x,i.y,i.z,&a,&b);
 			return ofVec2f(a,b);
+		}
+
+		ofVec3f jointToDepth3f(ofVec3f i) { 
+			float a,b; 
+			usertracker.convertJointCoordinatesToDepth(i.x,i.y,i.z,&a,&b);
+			return ofVec3f(a,b,i.z);
+		}
+
+		ofVec2f depthToJoint2f(ofVec3f i) { 
+			float a,b; 
+			usertracker.convertDepthCoordinatesToJoint(i.x,i.y,i.z,&a,&b);
+			return ofVec2f(a,b);
+		}
+
+		ofVec3f depthToJoint3f(ofVec3f i) { 
+			float a,b; 
+			usertracker.convertDepthCoordinatesToJoint(i.x,i.y,i.z,&a,&b);
+			return ofVec3f(a,b,i.z);
 		}
 
 	private:
